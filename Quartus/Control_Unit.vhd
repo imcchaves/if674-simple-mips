@@ -55,9 +55,9 @@ type estados is ( start_up_1, start_up_2, wait_1,wait_2, wait_3,load,i_nop,excep
 
 signal estado_atual 	: estados;
 
-shared variable fetch_v 		: std_logic;
-shared variable exception_v 	: std_logic;
-shared variable zero_v 			: std_logic;
+signal fetch_v 		: std_logic;
+signal exception_v 	: std_logic;
+signal zero_v 		: std_logic;
 	     
 begin
 		process(estado_atual, reset)
@@ -95,9 +95,7 @@ begin
 			store_type				<= "00";
 			
 			if (reset = '1') then
-				exception_v 	:= '0';
-				fetch_v			:= '0';
-				zero_v			:= '0';
+				
 			else 		
 				case estado_atual is
 					when start_up_1 =>
@@ -121,14 +119,14 @@ begin
 							end if;
 						elsif (nop_instruction = '1') then
 						else
-							fetch_v := '1';
+							--fetch_v := '1';
 						end if;
 
 					when wait_3 =>
 						ir_write <= '1';
 
 					when load =>
-						fetch_v := '1';
+						--fetch_v := '1';
 						load_data_reg <= '1';
 
 					when i_nop =>
@@ -136,7 +134,7 @@ begin
 
 					when exception_2 => 
 						load_trap <= '1';
-						exception_v := '0';
+						--exception_v := '0';
 						pc_write <= '1';
 					
 					when fetch =>
@@ -158,7 +156,7 @@ begin
 							pc_write <= '1';
 						else	
 							invalid_opcode <= '1';
-							exception_v := '1';
+							--exception_v := '1';
 						end if;
 
 					when i_store_word => 
@@ -239,7 +237,7 @@ begin
 
 					when calc_addr_3 =>
 						IorD <= '1';
-						fetch_v := '0';
+						--fetch_v := '0';
 
 					when exception_1 =>
 						alu_or_trap <= '0';
@@ -321,7 +319,7 @@ begin
 							end if;
 						else
 							if (funct = "100010" and exception = '1') then
-								exception_v := '1';
+								--exception_v := '1';
 							else
 
 							end if;
@@ -338,7 +336,7 @@ begin
 				       	load_alu_out <= '1';
 				
 						if (funct = "100000" and exception = '1') then
-							exception_v := '1';
+							--exception_v := '1';
 						else 
 						end if;
 
@@ -375,7 +373,7 @@ begin
 						if (opcode = "001001") then
 							unsigned_instruction <= '1'; --verificar isso
 						elsif (opcode = "001000" and exception = '1') then
-							exception_v := '1';
+							--exception_v := '1';
 						else
 
 						end if;
@@ -412,6 +410,9 @@ begin
 		process (clk,reset)
 		begin
 			if (reset = '1') then
+				exception_v 	<= '0';
+				fetch_v			<= '0';
+				zero_v			<= '0';
 				estado_atual <= start_up_1;
 
 			elsif (clk = '1' and clk'EVENT) then
@@ -446,7 +447,8 @@ begin
 						elsif (nop_instruction = '1') then
 							estado_atual <= i_nop;
 
-	   					else 
+	   					else
+							fetch_v <= '1';
 							estado_atual <= wait_3 ;
 						end if;
 
@@ -454,6 +456,7 @@ begin
 						estado_atual <= fetch;
 
 					when load =>
+						fetch_v <= '1';
 						if (opcode = "100000") then 
 							estado_atual <= i_load_byte;
 
@@ -467,7 +470,8 @@ begin
 					when i_nop =>
 						estado_atual <= wait_1;
 	
-					when exception_2 => 
+					when exception_2 =>
+						exception_v <= '0';
 						estado_atual <= wait_1;
 
 					when fetch =>
@@ -563,6 +567,7 @@ begin
 						estado_atual <= wait_1;
 
 					when calc_addr_1 =>
+						fetch_v <= '0';
 						estado_atual <= calc_addr_2;
 
 					when calc_addr_2 =>
@@ -663,6 +668,7 @@ begin
 							end if;
 						else
 							if (funct = "100010" and exception = '1') then
+								exception_v <= '1';
 								estado_atual <= exception_1;
 
 							else
@@ -674,7 +680,7 @@ begin
 						if (opcode = "000000" and funct = "100001") then
 
 						elsif (funct = "100000" and exception = '1') then
-
+							exception_v <= '1';
 						else
 							estado_atual <= alu_to_reg;
 						end if;
@@ -695,6 +701,7 @@ begin
 						if (opcode = "001001") then
 
 						elsif (opcode = "001000" and exception = '1') then
+							exception_v <= '1';
 							estado_atual <= exception_1;
 
 						else 

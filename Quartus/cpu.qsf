@@ -62,7 +62,7 @@ set_global_assignment -name VECTOR_WAVEFORM_FILE Control_Unit.vwf
 # Analysis & Synthesis Assignments
 # ================================
 set_global_assignment -name FAMILY "Stratix II"
-set_global_assignment -name TOP_LEVEL_ENTITY Control_Unit
+set_global_assignment -name TOP_LEVEL_ENTITY cpu
 
 # Fitter Assignments
 # ==================
@@ -73,4 +73,5 @@ set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
 # =====================
 set_global_assignment -name SIMULATION_MODE FUNCTIONAL
 set_global_assignment -name ADD_DEFAULT_PINS_TO_SIMULATION_OUTPUT_WAVEFORMS OFF
-set_global_assignment -name VECTOR_INPUT_SOURCE Control_Unit.vwf
+set_global_assignment -name VECTOR_INPUT_SOURCE cpu.vwf
+set_global_assignment -name END_TIME "3 us"

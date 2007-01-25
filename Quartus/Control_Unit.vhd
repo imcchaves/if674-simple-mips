@@ -58,14 +58,15 @@ signal estado_atual 	: estados;
 signal fetch_v 		: std_logic;
 signal exception_v 	: std_logic;
 signal zero_v 		: std_logic;
-	     
+signal load_v 		: std_logic;
+
 begin
 		process(estado_atual, reset)
 		begin
 			load_trap				<= '0';
 			mem_read_write			<= '0';
 			ir_write				<= '0';
-			iord					<= '0';
+			--iord					<= '0';
 			pc_write				<= '0';
 			beq						<= '0';
 			pc_write_cond			<= '0';
@@ -95,7 +96,7 @@ begin
 			store_type				<= "00";
 			
 			if (reset = '1') then
-				
+				iord <= '0';
 			else 		
 				case estado_atual is
 					when start_up_1 =>
@@ -103,12 +104,18 @@ begin
 				
 					when start_up_2 =>
 						reg_write <= '1';
-						mem_to_reg <= "100";
+						mem_to_reg <= "101";
 						reg_dest <= "11";
 					
 					when wait_1 =>
-								
+						if(load_v = '1') then
+							iord <= '1';
+						else
+							iord <= '0';
+						end if;
+						
 					when wait_2 =>
+						
 						if (exception_v = '1') then
 
 						elsif (fetch_v = '0') then						
@@ -237,7 +244,6 @@ begin
 
 					when calc_addr_3 =>
 						IorD <= '1';
-						--fetch_v := '0';
 
 					when exception_1 =>
 						alu_or_trap <= '0';
@@ -379,7 +385,7 @@ begin
 						end if;
 
 					when alu_to_reg =>
-					  	reg_dest  <= "01";
+					  	reg_dest  <= "10";
 					  	reg_write <= '1';
 					  	pc_write <= '1';
 
@@ -411,8 +417,9 @@ begin
 		begin
 			if (reset = '1') then
 				exception_v 	<= '0';
-				fetch_v			<= '0';
+				fetch_v			<= '1';
 				zero_v			<= '0';
+				load_v 			<= '0';
 				estado_atual <= start_up_1;
 
 			elsif (clk = '1' and clk'EVENT) then
@@ -435,12 +442,18 @@ begin
 								estado_atual <= load;
 
 							elsif (opcode = "101011") then
+								load_v <= '0';
+								fetch_v <= '1';
 								estado_atual <= i_store_word;
 
-							elsif (opcode = "101000") then	
+							elsif (opcode = "101000") then
+								load_v <= '0';
+								fetch_v <= '1';	
 						    	estado_atual <= i_store_byte;
 
 							elsif (opcode = "101001") then
+								load_v <= '0';
+								fetch_v <= '1';
 						    	estado_atual <= i_store_half;
 							end if;
 
@@ -457,6 +470,7 @@ begin
 
 					when load =>
 						fetch_v <= '1';
+						load_v <= '0';
 						if (opcode = "100000") then 
 							estado_atual <= i_load_byte;
 
@@ -516,19 +530,23 @@ begin
 							estado_atual <= load_ab;
 
 						else
-						
+							exception_v <= '1';
+							estado_atual <= exception_1;
 	    				end if;
 
 					when i_store_word => 
 						estado_atual <= wait_1;
 
-					when i_store_half => 
+					when i_store_half =>
+						load_v <= '0';
 						estado_atual <= wait_1;
 
-					when i_store_byte => 
+					when i_store_byte =>
+						load_v <= '0';
 						estado_atual <= wait_1;
 
 					when i_load_word =>
+						load_v <= '0';
 						estado_atual <= wait_1;
 
 					when i_load_half =>
@@ -571,6 +589,7 @@ begin
 						estado_atual <= calc_addr_2;
 
 					when calc_addr_2 =>
+						load_v <= '1';
         				estado_atual <= calc_addr_3;
 
 					when calc_addr_3 =>
@@ -617,6 +636,9 @@ begin
 
 						elsif (opcode = "001000" or opcode = "001001") then
 							estado_atual <= i_addi_addui;
+						
+						elsif (opcode = "000100" or opcode = "000101") then
+							estado_atual <= i_sub_subu;
 
 						elsif (opcode =  "000000") then
 							if (funct = "100010" or funct = "100011") then
@@ -654,18 +676,17 @@ begin
 						elsif (opcode = "000100") then
 						   	if (zero = '1') then
 								estado_atual <= i_beq;
-
 							else
-								estado_atual <= pc_4;
+								estado_atual <= wait_1;
 							end if;
 
 						elsif (opcode = "000101") then 
 							if (zero = '0') then
 								estado_atual <= i_bne;
-
-                            else
-								estado_atual <= pc_4;
+							else 
+								estado_atual <= wait_1;
 							end if;
+							
 						else
 							if (funct = "100010" and exception = '1') then
 								exception_v <= '1';

@@ -3,96 +3,96 @@ use IEEE.std_logic_1164.all;
 USE ieee.std_logic_arith.all;
 
 entity cpu is
-	port(
-		reset_in			:	in	bit;
-		clk_in				:	in	bit;
+	PORT (
+		reset_in			:	in	std_logic;
+		clk_in				:	in	std_logic;
 
-		ir_write_t			:   out bit;
+		ir_write_t			:   out std_logic;
 		debug_32_a			:	out std_logic_vector (31 DOWNTO 0)
-		);
+	);
 end cpu;
 
 
 architecture cpu_arch of cpu is
-		signal load_trap			:	bit;
-		signal equals				:	bit;
-		signal IorD					:	bit;
-		signal pc_write_cond		:	bit;
-		signal pc_write				:	bit;
-		signal beq					:	bit;
-		signal ir_write				:	bit;
+		signal load_trap			:	std_logic;
+		signal equals				:	std_logic;
+		signal IorD					:	std_logic;
+		signal pc_write_cond		:	std_logic;
+		signal pc_write				:	std_logic;
+		signal beq					:	std_logic;
+		signal ir_write				:	std_logic;
 		signal reg_dest				:	std_logic_vector (1 downto 0);
-		signal mem_write			:	bit;
-		signal load_data_reg		:	bit;
-		signal reset				:	bit;
-		signal reset_pc				:	bit;
+		signal mem_write			:	std_logic;
+		signal load_data_reg		:	std_logic;
+		signal reset				:	std_logic;
+		signal reset_pc				:	std_logic;
 		signal shift_control		:	std_logic_vector(1 downto 0);
 		signal alu_function			:	std_logic_vector(2 downto 0);
-		signal unsigned_instruction	: 	bit;
-		signal compare_instruction	: 	bit;
+		signal unsigned_instruction	: 	std_logic;
+		signal compare_instruction	: 	std_logic;
 		signal alu_src_b			:	std_logic_vector(1 downto 0);
-		signal alu_src_a			:	bit;
+		signal alu_src_a			:	std_logic;
 		signal mem_to_reg			:	std_logic_vector(2 downto 0);
 		signal store_type			:	std_logic_vector(1 downto 0);
-		signal reg_write			:	bit;
-		signal invalid_opcode		:	bit;
+		signal reg_write			:	std_logic;
+		signal invalid_opcode		:	std_logic;
 		signal pc_source			:	std_logic_vector(1 downto 0);
-		signal load_a				:	bit;
-		signal load_b				:	bit;
-		signal alu_or_trap			:	bit;
-		signal load_alu_out			:	bit;
+		signal load_a				:	std_logic;
+		signal load_b				:	std_logic;
+		signal alu_or_trap			:	std_logic;
+		signal load_alu_out			:	std_logic;
 		signal alu_mux				: 	std_logic_vector(1 downto 0);
 		signal mult_control			:	std_logic_vector(1 downto 0);								
-		signal clk					:	bit;		
+		signal clk					:	std_logic;		
 			
 		signal funct				:	std_logic_vector(5 downto 0);
-		signal nop_instruction		:	bit;		
+		signal nop_instruction		:	std_logic;		
 		signal opcode				:	std_logic_vector(5 downto 0);
-		signal zero					:	bit;		
-		signal exception			:	bit;	
-		signal end_multi			:	bit;
+		signal zero					:	std_logic;		
+		signal exception			:	std_logic;	
+		signal end_multi			:	std_logic;
 
 
 component processamento
 	port(
-		load_trap			:	in	bit;
-		equals				:	in	bit;
-		IorD				:	in	bit;
-		pc_write_cond		:	in	bit;
-		pc_write			:	in	bit;
-		beq					:	in	bit;
-		ir_write			:	in	bit;
+		load_trap			:	in	std_logic;
+		equals				:	in	std_logic;
+		IorD				:	in	std_logic;
+		pc_write_cond		:	in	std_logic;
+		pc_write			:	in	std_logic;
+		beq					:	in	std_logic;
+		ir_write			:	in	std_logic;
 		reg_dest			:	in	std_logic_vector (1 downto 0);
-		mem_write			:	in	bit;
-		load_data_reg		:	in	bit;
-		reset				:	in	bit;
-		reset_pc			:	in	bit;
+		mem_write			:	in	std_logic;
+		load_data_reg		:	in	std_logic;
+		reset				:	in	std_logic;
+		reset_pc			:	in	std_logic;
 		shift_control		:	in	std_logic_vector(1 downto 0);
 		alu_function		:	in	std_logic_vector(2 downto 0);
-		unsigned_instruction: 	in	bit;
-		compare_instruction	: 	in 	bit;
+		unsigned_instruction: 	in	std_logic;
+		compare_instruction	: 	in 	std_logic;
 		alu_src_b			:	in	std_logic_vector(1 downto 0);
-		alu_src_a			:	in	bit;
+		alu_src_a			:	in	std_logic;
 		mem_to_reg			:	in	std_logic_vector(2 downto 0);
 		store_type			:	in	std_logic_vector(1 downto 0);
-		reg_write			:	in	bit;
-		invalid_opcode		:	in	bit;
+		reg_write			:	in	std_logic;
+		invalid_opcode		:	in	std_logic;
 		pc_source			:	in	std_logic_vector(1 downto 0);
-		load_a				:	in	bit;
-		load_b				:	in	bit;
-		alu_or_trap			:	in	bit;
-		load_alu_out		:	in	bit;
+		load_a				:	in	std_logic;
+		load_b				:	in	std_logic;
+		alu_or_trap			:	in	std_logic;
+		load_alu_out		:	in	std_logic;
 		alu_mux				: 	in 	std_logic_vector(1 downto 0);
 		mult_control		:	in	std_logic_vector(1 downto 0);								
-		clk					:	in	bit;
+		clk					:	in	std_logic;
 				
 			
 		funct				:	out	std_logic_vector(5 downto 0);
-		nop_instruction		:	out	bit;		
+		nop_instruction		:	out	std_logic;		
 		opcode				:	out	std_logic_vector(5 downto 0);
-		zero				:	out	bit;		
-		exception			:	out	bit;	
-		end_multi			:	out	bit
+		zero				:	out	std_logic;		
+		exception			:	out	std_logic;	
+		end_multi			:	out	std_logic
 		);
 end component;
 --
@@ -100,41 +100,41 @@ end component;
 component Control_Unit
 PORT
 (
-		load_trap			:	out	bit;
-		equals				:	out	bit;
-		IorD				:	out	bit;
-		pc_write_cond		:	out	bit;
-		pc_write			:	out	bit;
-		beq					:	out	bit;
-		ir_write			:	out	bit;
+		load_trap			:	out	std_logic;
+		equals				:	out	std_logic;
+		IorD				:	out	std_logic;
+		pc_write_cond		:	out	std_logic;
+		pc_write			:	out	std_logic;
+		beq					:	out	std_logic;
+		ir_write			:	out	std_logic;
 		reg_dest			:	out	std_logic_vector(1 downto 0);
-		mem_read_write		:	out	bit;
-		reset_pc			:	out	bit;
-		load_data_reg		: 	out bit;
-		load_alu_out		:	out	bit;
-		load_a				:	out	bit;
-		load_b				:	out	bit;
+		mem_read_write		:	out	std_logic;
+		reset_pc			:	out	std_logic;
+		load_data_reg		: 	out std_logic;
+		load_alu_out		:	out	std_logic;
+		load_a				:	out	std_logic;
+		load_b				:	out	std_logic;
 		pc_source			:	out	std_logic_vector(1 downto 0);		
-		reg_write			:	out	bit;
+		reg_write			:	out	std_logic;
 		store_type			:	out	std_logic_vector(1 downto 0);
 		mem_to_reg			:	out	std_logic_vector(2 downto 0);
-		alu_src_a			:	out	bit;
+		alu_src_a			:	out	std_logic;
 		alu_src_b			:	out	std_logic_vector(1 downto 0);
-		unsigned_instruction : 	out	bit;
-		compare_instruction	: 	out	bit;
+		unsigned_instruction : 	out	std_logic;
+		compare_instruction	: 	out	std_logic;
 		alu_func			:	out std_logic_vector(2 downto 0);
 		alu_mux				: 	out	std_logic_vector(1 downto 0);
 		shift_control		:   out std_logic_vector(1 downto 0);
 		mult_control		: 	out std_logic_vector(1 downto 0);
-		alu_or_trap			: 	out bit;
-		invalid_opcode		:	out	bit;
+		alu_or_trap			: 	out std_logic;
+		invalid_opcode		:	out	std_logic;
 
-		reset				:	in	bit;
-		clk					:	in	bit;
-		exception			:	in	bit;
-		zero				:	in	bit;
-		nop_instruction		:	in	bit;
-		end_mult			:   in  bit;
+		reset				:	in	std_logic;
+		clk					:	in	std_logic;
+		exception			:	in	std_logic;
+		zero				:	in	std_logic;
+		nop_instruction		:	in	std_logic;
+		end_mult			:   in  std_logic;
 		opcode				: 	in 	std_logic_vector (5 downto 0);
 		funct				:   in  std_logic_vector (5 downto 0)
 );
@@ -145,8 +145,85 @@ begin
 reset <= reset_in;
 clk <= clk_in;
 
-processing 				:	processamento	port map(load_trap, equals, IorD, pc_write_cond, pc_write, beq, ir_write, reg_dest, mem_write, load_data_reg, reset, reset_pc, shift_control, alu_function, unsigned_instruction, compare_instruction, alu_src_b, alu_src_a, mem_to_reg, store_type, reg_write, invalid_opcode, pc_source, load_a, load_b, alu_or_trap, load_alu_out, alu_mux, mult_control, clk, funct, nop_instruction, opcode, zero, exception, end_multi);
-control					:	Control_Unit	port map(load_trap, equals, IorD, pc_write_cond, pc_write, beq, ir_write, reg_dest, mem_write, reset_pc, load_data_reg, load_alu_out, load_a, load_b, pc_source, reg_write, store_type, mem_to_reg, alu_src_a, alu_src_b, unsigned_instruction, compare_instruction, alu_function, alu_mux, shift_control, mult_control, alu_or_trap, invalid_opcode, reset, clk, exception, zero, nop_instruction, end_multi, opcode, funct);														
+processing	:	processamento
+	port map (
+		load_trap,
+		equals,
+		IorD,
+		pc_write_cond,
+		pc_write,
+		beq,
+		ir_write,
+		reg_dest,
+		mem_write,
+		load_data_reg,
+		reset,
+		reset_pc,
+		shift_control,
+		alu_function,
+		unsigned_instruction,
+		compare_instruction,
+		alu_src_b,
+		alu_src_a,
+		mem_to_reg,
+		store_type,
+		reg_write,
+		invalid_opcode,
+		pc_source,
+		load_a,
+		load_b,
+		alu_or_trap,
+		load_alu_out,
+		alu_mux,
+		mult_control,
+		clk,
+		funct,
+		nop_instruction,
+		opcode,
+		zero,
+		exception,
+		end_multi
+	);
+
+control	:	Control_Unit
+	port map (
+		load_trap,
+		equals,
+		IorD,
+		pc_write_cond,
+		pc_write,
+		beq,
+		ir_write,
+		reg_dest,
+		mem_write,
+		reset_pc,
+		load_data_reg,
+		load_alu_out,
+		load_a,
+		load_b,
+		pc_source,
+		reg_write,
+		store_type,
+		mem_to_reg,
+		alu_src_a,
+		alu_src_b,
+		unsigned_instruction,
+		compare_instruction,
+		alu_function,
+		alu_mux,
+		shift_control,
+		mult_control,
+		alu_or_trap,
+		invalid_opcode,
+		reset,
+		clk,
+		exception,
+		zero,
+		nop_instruction,
+		end_multi,
+		opcode,
+		funct
+	);														
 
 debug_32_a (31 DOWNTO 26) <= opcode;
 debug_32_a (25 DOWNTO 6) <= "00000000000000000000";

@@ -6,6 +6,8 @@ entity cpu is
 	port(
 		reset_in			:	in	bit;
 		clk_in				:	in	bit;
+
+		ir_write_t			:   out bit;
 		debug_32_a			:	out std_logic_vector (31 DOWNTO 0)
 		);
 end cpu;
@@ -149,5 +151,6 @@ control					:	Control_Unit	port map(load_trap, equals, IorD, pc_write_cond, pc_w
 debug_32_a (31 DOWNTO 26) <= opcode;
 debug_32_a (25 DOWNTO 6) <= "00000000000000000000";
 debug_32_a (5 DOWNTO 0) <= funct;
+ir_write_t <= ir_write;
 
 end cpu_arch;

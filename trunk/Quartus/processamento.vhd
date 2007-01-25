@@ -109,172 +109,171 @@ architecture ar of processamento is
 component store_merge
 port(
 	storeType	:	in	std_logic_vector(1 downto 0);
-	data		:	in	std_logic_vector(31 downto 0);
-	merge_in	:	in	std_logic_vector(31 downto 0);
-	saida		:	out	std_logic_vector(31 downto 0)
+	data,merge_in	:	in	std_logic_vector(31 downto 0);
+	saida	:	out	std_logic_vector(31 downto 0)
 	);
 end component;
 --
 component ula32
-	port ( 
-		A 			: in bit_vector (31 downto 0);	-- Operando A da ULA
-		B 			: in bit_vector (31 downto 0);	-- Operando B da ULA
-		Seletor 	: in bit_vector(2 downto 0);	-- Seletor da operação da ULA
-		S 			: out bit_vector (31 downto 0);	-- Resultado da operação (SOMA, SUB, AND, NOT, INCREMENTO, XOR)  
-		Overflow 	: out bit;						-- Sinaliza overflow aritmético
-		Negativo	: out bit;						-- Sinaliza valor negativo
-		z 			: out bit;						-- Sinaliza quando S for zero
-		Igual		: out bit;						-- Sinaliza se A=B
-		Maior		: out bit;						-- Sinaliza se A>B
-		Menor		: out bit 						-- Sinaliza se A<B
+port(
+	A 			: in std_logic_vector (31 downto 0);
+	B 			: in std_logic_vector (31 downto 0);
+	Seletor 	: in std_logic_vector(2 downto 0);
+	s 			: out std_logic_vector (31 downto 0);
+	Overflow 	: out bit;
+	Negativo	: out bit;
+	z 			: out bit;
+	Igual		: out bit;
+	Maior		: out bit;
+	Menor		: out bit
 	);
 end component;
 --
 component registrador
 port (
-		Clk		: IN	bit;						-- Clock do registrador
-		Reset	: IN	bit;						-- Reinicializa o conteudo do registrador
-		Load	: IN	bit;						-- Carrega o registrador com o vetor Entrada
-		Entrada : IN	bit_vector (31 downto 0); 	-- Vetor de bits que possui a informação a ser carregada no registrador
-		Saida	: OUT	bit_vector (31 downto 0)	-- Vetor de bits que possui a informação já carregada no registrador
+	Clk		: in	bit;
+	Reset	: in	bit;
+	Load	: in	bit;
+	Entrada : in	std_logic_vector (31 downto 0);
+	Saida	: out	std_logic_vector (31 downto 0)
 	);
 end component;
 --
 component regdesloc
 port (
-		Clk		: IN	bit;	-- Clock do sistema
-		Shift 	: IN	bit_vector (1 downto 0);	-- Função a ser realizada pelo registrador 
-		N		: IN	bit_vector (4 downto 0);	-- Quantidade de deslocamentos
-		Entrada : IN	bit_vector (31 downto 0);	-- Vetor a ser deslocado
-		Saida	: OUT	bit_vector (31 downto 0)	-- Vetor deslocado
+	Clk		: in	bit;
+	Shift 	: in	std_logic_vector (1 downto 0);
+	N		: in	std_logic_vector (4 downto 0);
+	Entrada : in	std_logic_vector (31 downto 0);
+	Saida	: out	std_logic_vector (31 downto 0)
 	);
 end component;
 --
 component memoria
 port(
-	   Address	: IN BIT_VECTOR(31 DOWNTO 0);	-- Endereço de memória a ser lido
-       Clock	: IN BIT;						-- Clock do sistema
-	   Wr		: IN BIT;						-- Indica se a memória será lida (0) ou escrita (1)
-       Dataout	: OUT BIT_VECTOR (31 DOWNTO 0);	-- Valor a ser escrito quando Wr = 1
-       Datain	: IN BIT_VECTOR(31 DOWNTO 0)	-- Valor lido da memória quando Wr = 0
+	   Address	: in std_logic_vector(31 downto 0);
+       Clock	: in bit;
+	   Wr		: in bit;
+       Dataout	: out std_logic_vector (31 downto 0);
+       Datain	: in std_logic_vector(31 downto 0)
    );
 end component;
 --
 component instr_reg
 port( 
-	Clk			: in bit;	-- Clock do sistema
-	Reset		: in bit;	-- Reset
-	Load_ir		: in bit;	-- Bit para ativar carga do registrador de intruções
-	Entrada		: in bit_vector (31 downto 0);	-- Intrução a ser carregada
-	Instr31_26	: out bit_vector (5 downto 0);	-- Bits 31 a 26 da instrução
-	Instr25_21	: out bit_vector (4 downto 0);	-- Bits 25 a 21 da instrução
-	Instr20_16	: out bit_vector (4 downto 0);	-- Bits 20 a 16 da instrução
-	Instr15_0	: out bit_vector (15 downto 0)	-- Bits 15 a 0 da instrução
+	Clk			: in bit;
+	Reset		: in bit;
+	Load_ir		: in bit;
+	Entrada		: in std_logic_vector (31 downto 0);
+	instr31_26	: out std_logic_vector (5 downto 0);
+	instr25_21	: out std_logic_vector (4 downto 0);
+	instr20_16	: out std_logic_vector (4 downto 0);
+	instr15_0	: out std_logic_vector (15 downto 0)
 );
 end component;
 --
 component banco_reg
 PORT(
-		Clk			: IN	bit;						-- Clock do banco de registradores
-		Reset		: IN	bit;						-- Reinicializa o conteudo dos registradores
-		RegWrite	: IN	bit;						-- Indica se a operação é de escrita ou leitura
-		ReadReg1	: IN	bit_vector (4 downto 0);	-- Indica o registrador #1 a ser lido
-		ReadReg2	: IN	bit_vector (4 downto 0);	-- Indica o registrador #2 a ser lido
-		WriteReg	: IN	bit_vector (4 downto 0);	-- Indica o registrador a ser escrito
-		WriteData 	: IN	bit_vector (31 downto 0);	-- Indica o dado a ser escrito
-		ReadData1	: OUT	bit_vector (31 downto 0);	-- Mostra a informaçao presente no registrador #1
-		ReadData2	: OUT	bit_vector (31 downto 0)	-- Mostra a informação presente no registrador #2
+	Clk			: in	bit;
+	Reset		: in	bit;
+	RegWrite	: in	bit;
+	ReadReg1	: in	std_logic_vector (4 downto 0);
+	ReadReg2	: in	std_logic_vector (4 downto 0);
+	WriteReg	: in	std_logic_vector (4 downto 0);
+	WriteData 	: in	std_logic_vector (31 downto 0);
+	ReadData1	: out	std_logic_vector (31 downto 0);
+	ReadData2	: out	std_logic_vector (31 downto 0)
 );
 end component;
 --
 component shift_left_2_26
 PORT (
-	vector_26_input		: IN	STD_LOGIC_VECTOR (25 DOWNTO 0);
-	vector_28_output	: OUT	STD_LOGIC_VECTOR (27 DOWNTO 0)
+	vector_26_input		: in	std_logic_vector (25 downto 0);
+	vector_28_output	: out	std_logic_vector (27 downto 0)
 );
 end component;
 --
 component shift_left_2_32
 PORT (
-	vector_32_input		: IN	STD_LOGIC_VECTOR (31 DOWNTO 0);
-	vector_32_output	: OUT	STD_LOGIC_VECTOR (31 DOWNTO 0)
+	vector_32_input		: in	std_logic_vector (31 downto 0);
+	vector_32_output	: out	std_logic_vector (31 downto 0)
 );
 end component;
 --
 component sign_ext_16
 PORT (
-		vector_16		: IN	STD_LOGIC_VECTOR (15 DOWNTO 0);
-		vector_32		: OUT	STD_LOGIC_VECTOR (31 DOWNTO 0)
-	);
+	vector_16		: in	std_logic_vector (15 downto 0);
+	vector_32		: out	std_logic_vector (31 downto 0)
+);
 end component;
 --
 component sign_ext_8
 PORT (
-	vector_8		: IN	STD_LOGIC_VECTOR (7 DOWNTO 0);
-	vector_32		: OUT	STD_LOGIC_VECTOR (31 DOWNTO 0)
+	vector_8		: in	std_logic_vector (7 downto 0);
+	vector_32		: out	std_logic_vector (31 downto 0)
 );
 end component;
 --
 component switch
 Port (
-         input0: in std_logic_vector (31 downto 0);
-         input1: in bit;
-         output: out std_logic_vector (31 downto 0);
-         unsigned_instruction: in bit
-      );
+	input0: in std_logic_vector (31 downto 0);
+	input1: in bit;
+	output: out std_logic_vector (31 downto 0);
+	unsigned_instruction: in bit
+);
 end component;
 --
 component lui_mask
 PORT(
-	input 							: IN	STD_LOGIC_VECTOR(15 DOWNTO 0);
-	output						 	: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
+	input	: in	std_logic_vector(15 downto 0);
+	output 	: out	std_logic_vector(31 downto 0)
 );
 end component;
 --
 component mux_2
 PORT(
-	input0, input1 					: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-	seletor							: IN    BIT;
-	output						 	: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
+	input0, input1 	: in	std_logic_vector(31 downto 0);
+	seletor			: in    bit;
+	output		 	: out	std_logic_vector(31 downto 0)
 );
 end component;
 --
 component mux_3
 PORT(
-	input0, input1, input2			: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-	seletor							: IN   STD_LOGIC_VECTOR(1 DOWNTO 0);
-	output						 	: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
+	input0, input1, input2	: in	std_logic_vector(31 downto 0);
+	seletor					: in   std_logic_vector(1 downto 0);
+	output				 	: out	std_logic_vector(31 downto 0)
 );
 end component;
 --
 component mux_4
 PORT(
-	input0, input1, input2, input3	: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-	seletor							: IN   STD_LOGIC_VECTOR(1 DOWNTO 0);
-	output						 	: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
+	input0, input1, input2, input3	: in	std_logic_vector(31 downto 0);
+	seletor							: in   std_logic_vector(1 downto 0);
+	output						 	: out	std_logic_vector(31 downto 0)
 );
 end component;
 --
 component mux_5
 PORT(
-		input0, input1, input2, input3, input4	: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-		seletor									: IN   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		output						 			: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
-	);
+	input0, input1, input2, input3, input4	: in	std_logic_vector(31 downto 0);
+	seletor									: in   std_logic_vector(2 downto 0);
+	output						 			: out	std_logic_vector(31 downto 0)
+);
 end component;
 --
 component mux_6
 PORT(
-		input0, input1, input2, input3, input4, input5	: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-		seletor											: IN   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		output						 					: OUT	STD_LOGIC_VECTOR(31 DOWNTO 0)
-	);
+	input0, input1, input2, input3, input4, input5	: in	std_logic_vector(31 downto 0);
+	seletor											: in   std_logic_vector(2 downto 0);
+	output						 					: out	std_logic_vector(31 downto 0)
+);
 end component;
 --
 component nop_detector
 PORT(
-		input							: IN	STD_LOGIC_VECTOR(31 DOWNTO 0);
-		output							: OUT 	BIT 
+	input	: in	std_logic_vector(31 downto 0);
+	output	: out 	bit 
 );
 end component;
 
@@ -289,7 +288,7 @@ port(
 end component;	
 
 component trap_epc
-	PORT
+PORT
 	(
 		unsigned_instruction			: in	bit;
 		invalid_opcode					: in    bit;
@@ -313,9 +312,9 @@ component multiplicador
 PORT (
 		A, B	:	IN	STD_LOGIC_VECTOR (31 DOWNTO 0);
 		control	:	IN	STD_LOGIC_VECTOR (1 DOWNTO 0);
-		reset	:	IN	STD_LOGIC;
-		clk		:	IN	STD_LOGIC;
-		fim		:	OUT STD_LOGIC;
+		reset	:	IN	bit;
+		clk		:	IN	bit;
+		fim		:	OUT bit;
 		saida	:	OUT	STD_LOGIC_VECTOR (31 DOWNTO 0)
 	);
 end component;
@@ -352,7 +351,7 @@ nopDetector 			:	nop_detector 		port map(memory_to_IR,nop);
 loadPc					: 	load_pc 			port map(cu_to_entity_load_pc_equals, cu_to_entity_load_pc_pc_write_cond, cu_to_entity_load_pc_pc_write,cu_to_entity_load_pc_beq, entity_load_pc_to_load_pc);
 luiMask					: 	lui_mask 			port map(IR_to_signal_16_bits,lui_mask_to_mux03_4);
 ula						:	ula32				port map(mux05_to_aluA, mux04_to_aluB, alu_function_to_alu, alu_to_switch_0, overflow_to_trap_epc, z => alu_to_zero, Menor => lt_to_switch_1);
-shift					:	regdesloc			port map(clk, shift_control_to_shift, IR_to_signal_16_bits(10 downto 6), registers_bank_to_reg_B, shift_to_mux08_1);
+shift					:	regdesloc			port map(clk, shift_control_to_shift, IR_to_signal_16_bits(10 downto 6), registers_bank_to_reg_A, shift_to_mux08_1);
 --FALTA MULTIPLICACAO
 mult					:	multiplicador		port map(registers_bank_to_reg_A, registers_bank_to_reg_B, mult_control_to_mult, reset, clk, end_multiply, mult_to_mux08_0);
 
